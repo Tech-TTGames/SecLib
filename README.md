@@ -1,6 +1,4 @@
-# BSRLib
-A BSR school library project
+# SecLib
+A fork of BSRLib (also done by the same author) with some intentionally incorrect changes and issues for showcase reasons.
 
-No longer maintained in any way, shape or form.
-
-Unsafe Data was scrubbed.
+DO NOT USE FOR ACTUAL CASES, BSRLib ITSELF WOULD BE MORE SECURE.
