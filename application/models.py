@@ -39,17 +39,24 @@ class User(UserMixin,db.Model):
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
     
     def set_Password(self, password):
-        self.password_hash = ph().hash(password)
+        self.password_hash = md5(password.encode('utf-8')).hexdigest()
+        # 2025:A04 Fix
+        # self.password_hash = ph().hash(password)
     
     def verify_Password(self, password):
         passhash = self.password_hash
-        try:
-            ph().verify(passhash, password)
-            if ph().check_needs_rehash(passhash):
-                self.set_Password(password)
+        if passhash == md5(password.encode('utf-8')).hexdigest():
             return True
-        except argon2.exceptions.VerifyMismatchError:
-            return False
+        return False
+        # 2025:A04 Fix. Note that this fix is not perfect due to the "old" user passwords not working, but this is just an example.
+        # It would also still probably be prudent to force all users to reset after an MD5 storage.
+        # try:
+        #     ph().verify(passhash, password)
+        #     if ph().check_needs_rehash(passhash):
+        #         self.set_Password(password)
+        #     return True
+        # except argon2.exceptions.VerifyMismatchError:
+        #     return False
     
     def is_following(self,user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0

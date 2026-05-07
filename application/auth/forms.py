@@ -1,5 +1,4 @@
 from flask_wtf import FlaskForm
-from flask import current_app
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from application.models import User
@@ -30,7 +29,7 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=mail.data).first()
         if user is not None:
             raise ValidationError('Email already in use!')
-        # Original code not needed for this showcase.
+        # Original code isn't needed for this showcase.
         # domain = mail.data.split('@')[1]
         # if domain not in current_app.config['VALID_DOMAINS']:
         #        raise ValidationError('Illegal email address (domain not on whitelist)')

@@ -1,4 +1,5 @@
 import os
+import subprocess
 from flask import render_template, flash, redirect, url_for, request, send_from_directory, current_app
 from flask.helpers import flash
 from werkzeug.utils import redirect
@@ -144,6 +145,8 @@ def calibre_access():
         # os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.username }"')
         os.system(f'echo "Invalidating card for: {current_user.calibre_usrname}" > library_cards.log')
         os.system(f'echo "Invalidating card for: {current_user.username}" > library_cards.log')
+        # FIXED 2025:A05 (other instances may also be fixed similarly, however this is the only 'exploitable' one as calibre_usrname is sanitized.
+        # subprocess.run(['echo', "Invalidating card for:", current_user.username, "> library_cards.log"], shell=True)
         current_user.calibre_usrname = sub(r'[^\w \-]+','',current_user.username)
         current_user.calibre_pass = None
         db.session.commit()

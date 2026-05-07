@@ -57,6 +57,20 @@ def init_app(config_class=Config):
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
         app.logger.info('SecLibACC startup...')
+    # 2025:A07 To fix remove.
+    with app.app_context():
+        from application.models import User
+        if not User.query.filter_by(username='admin').first():
+            default_admin = User(
+                username='admin',
+                email='admin@example.com',
+                admin=True,
+                confirmed=True
+            )
+            default_admin.set_password('admin')
+            db.session.add(default_admin)
+            db.session.commit()
+            app.logger.warning("INSECURE: Default admin account created with password 'admin'")
     return app
 
 

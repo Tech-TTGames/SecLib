@@ -124,40 +124,42 @@ def recover():
 @bp.route('/control',methods=['GET','POST'])
 @login_required
 def control_panel():
-    if not current_user.admin:
-        raise Forbidden
-    else:
-        form = ControlPanel()
-        if form.validate_on_submit():
-            if not current_user.verify_Password(form.password_confirm.data):
-                flash('Invalid Password!', category='warning')
-                return redirect(url_for('auth.control_panel'))
-            user = User.query.filter_by(username=form.usertoedit.data).first()
-            actions_run = "Executed:"
-            if form.changename.data:
-                user.username = form.new_name.data
-                user.calibre_usrname = sub(r'[^\w \-]+','',form.username.data)
-                actions_run += f' Name changed to {form.new_name.data};'
-            if form.changemail.data:
-                user.email = form.new_email.data
-                actions_run += f' Email changed to {form.new_email.data};'
-            if form.make_admin.data:
-                user.admin = not user.admin
-                actions_run += f'Toggled admin to {user.admin};'
-            if form.deactivate_account.data:
-                user.confirmed = not user.confirmed
-                actions_run += f'Toggled active to {user.confirmed}'
-            if form.lock_account.data:
-                user.lock = not user.lock
-                actions_run += f'Toggled lock to {user.lock}'
-            if form.reset_calibre.data:
-                # Original Code
-                # system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
-                system(f'echo "Invalidating card for: {current_user.username}" > library_cards.log')
-                user.calibre_pass = None
-                actions_run += 'Calibre Data Reset;'
-            actions_run += f' for {user.username}!'
-            db.session.commit()
-            flash(actions_run)
+    # 2025:A01 Fix
+    # if not current_user.admin:
+    #     raise Forbidden
+    # else:
+    # also indent the following code
+    form = ControlPanel()
+    if form.validate_on_submit():
+        if not current_user.verify_Password(form.password_confirm.data):
+            flash('Invalid Password!', category='warning')
             return redirect(url_for('auth.control_panel'))
-        return render_template('/auth/control_panel.html',form=form, title='ACP')
+        user = User.query.filter_by(username=form.usertoedit.data).first()
+        actions_run = "Executed:"
+        if form.changename.data:
+            user.username = form.new_name.data
+            user.calibre_usrname = sub(r'[^\w \-]+','',form.username.data)
+            actions_run += f' Name changed to {form.new_name.data};'
+        if form.changemail.data:
+            user.email = form.new_email.data
+            actions_run += f' Email changed to {form.new_email.data};'
+        if form.make_admin.data:
+            user.admin = not user.admin
+            actions_run += f'Toggled admin to {user.admin};'
+        if form.deactivate_account.data:
+            user.confirmed = not user.confirmed
+            actions_run += f'Toggled active to {user.confirmed}'
+        if form.lock_account.data:
+            user.lock = not user.lock
+            actions_run += f'Toggled lock to {user.lock}'
+        if form.reset_calibre.data:
+            # Original Code
+            # system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
+            system(f'echo "Invalidating card for: {current_user.username}" > library_cards.log')
+            user.calibre_pass = None
+            actions_run += 'Calibre Data Reset;'
+        actions_run += f' for {user.username}!'
+        db.session.commit()
+        flash(actions_run)
+        return redirect(url_for('auth.control_panel'))
+    return render_template('/auth/control_panel.html',form=form, title='ACP')
