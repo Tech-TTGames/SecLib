@@ -22,7 +22,7 @@ def before_request():
 @bp.route('/index', methods=['GET','POST'])
 def index():
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(announcment=True).order_by(Post.timestamp.desc()).paginate(page,current_app.config['POSTS_PER_PAGE'], True)
+    posts = Post.query.filter_by(announcment=True).order_by(Post.timestamp.desc()).paginate(page=page,per_page=current_app.config['POSTS_PER_PAGE'], error_out=True)
     stats = (Post.query.count(),User.query.filter_by(confirmed=True,lock=False).count(),User.query.filter(User.calibre_pass != None).count())
     next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None

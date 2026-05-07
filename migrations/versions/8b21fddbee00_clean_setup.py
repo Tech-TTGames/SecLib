@@ -1,8 +1,8 @@
-"""users table
+"""clean setup
 
-Revision ID: d2b361fe7f1b
+Revision ID: 8b21fddbee00
 Revises: 
-Create Date: 2021-11-04 14:33:59.218135
+Create Date: 2026-05-07 19:50:52.249834
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd2b361fe7f1b'
+revision = '8b21fddbee00'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,17 +23,32 @@ def upgrade():
     sa.Column('username', sa.String(length=64), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=True),
     sa.Column('password_hash', sa.String(length=128), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('about_me', sa.String(length=140), nullable=True),
+    sa.Column('last_seen', sa.DateTime(), nullable=True),
+    sa.Column('calibre_pass', sa.String(length=128), nullable=True),
+    sa.Column('calibre_usrname', sa.String(length=128), nullable=True),
+    sa.Column('confirmed', sa.Boolean(), nullable=True),
+    sa.Column('admin', sa.Boolean(), nullable=True),
+    sa.Column('lock', sa.Boolean(), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('calibre_usrname')
     )
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_user_email'), ['email'], unique=True)
         batch_op.create_index(batch_op.f('ix_user_username'), ['username'], unique=True)
 
+    op.create_table('followers',
+    sa.Column('follower_id', sa.Integer(), nullable=True),
+    sa.Column('followed_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['followed_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['follower_id'], ['user.id'], )
+    )
     op.create_table('post',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('body', sa.String(length=140), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
     sa.Column('usr_id', sa.Integer(), nullable=True),
+    sa.Column('announcment', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['usr_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -49,6 +64,7 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_post_timestamp'))
 
     op.drop_table('post')
+    op.drop_table('followers')
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_user_username'))
         batch_op.drop_index(batch_op.f('ix_user_email'))
