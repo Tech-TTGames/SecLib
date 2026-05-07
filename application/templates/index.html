@@ -5,12 +5,12 @@
     {% if current_user.is_authenticated %}
     <h1>Hi,{% if current_user.admin %}<span style="color:#ff0000"> ADMIN</span>{% endif %} {{ current_user.username }}!</h1>
     {% else %}
-    <h1>Welcome to BSRLib!</h1>
+    <h1>Welcome to SecLib!</h1>
     {% endif %}
     <p>This is the Account and Forums subsystem of our library. Feel free to look around!</p>
     <p>In the <b>Forum</b> tab we have a place for the users to exchange books and talk about anything you want!</p>
     <p>And in the <b>The Library</b> tab you can register to the calibre book management system! Also you can use a link placed there to add books!</p>
-    <p>To Contact the Administration please click <a href="mailto:admin@techttgames.dev?subject=BSRLib Support">here</a>.</p>
+    <p>To Contact the Administration please click <a href="mailto:admin@techttgames.dev?subject=SecLib Support">here</a>.</p>
     <h3>Current Statistics</h2>
     <p>There are currently <b>{{ stat[1] }}</b> users.</p>
     <p>Of said users <b>{{ stat[2] }}</b> are registered to calibre.</p>

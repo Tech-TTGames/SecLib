@@ -22,7 +22,7 @@ def before_request():
 @bp.route('/index', methods=['GET','POST'])
 def index():
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.filter_by(announcment=True).order_by(Post.timestamp.desc()).paginate(page=page,per_page=current_app.config['POSTS_PER_PAGE'], error_out=True)
+    posts = Post.query.filter_by(announcment=True).order_by(Post.timestamp.desc()).paginate(page=page,per_page=current_app.config['POSTS_PER_PAGE'], count=True)
     stats = (Post.query.count(),User.query.filter_by(confirmed=True,lock=False).count(),User.query.filter(User.calibre_pass != None).count())
     next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
@@ -55,7 +55,7 @@ def user(username):
         flash(category='warning',message='This account was locked!')
         return redirect(url_for('main.index'))
     page = request.args.get('page', 1, type=int)
-    posts = user.posts.order_by(Post.timestamp.desc()).paginate(page, current_app.config['POSTS_PER_PAGE'], True)
+    posts = user.posts.order_by(Post.timestamp.desc()).paginate(page=page,per_page=current_app.config['POSTS_PER_PAGE'], count=True)
     next_url = url_for('main.user', username=user.username, page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.user', username=user.username, page=posts.prev_num) if posts.has_prev else None
     return render_template('user.html',user=user, posts=posts.items, title=f"{username}'s User Page", form=form, next_url=next_url, prev_url=prev_url)
@@ -126,19 +126,25 @@ def calibre_access():
     form = ButtonForm()
     if not current_user.calibre_pass:
         if form.is_submitted():
-            chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&*+,./<=>?@\^_{-}~"
+            chars = r"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&*+,./<=>?@\^_{-}~"
             calibre_pass = ''.join(choice(chars) for _ in range(10))
             current_user.calibre_pass = calibre_pass
-            os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users add "{ current_user.calibre_usrname }" "{ calibre_pass }"')
+            # Original Code
+            # os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users add "{ current_user.calibre_usrname }" "{ calibre_pass }"')
+            os.system(f'echo "Generating card for: {current_user.calibre_usrname}" > library_cards.log')
             if not current_user.admin:
-                os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users readonly "{ current_user.calibre_usrname }" set')
+                # os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users readonly "{ current_user.calibre_usrname }" set')
+                os.system(f'echo "Limiting card for: {current_user.calibre_usrname}" > library_cards.log')
             db.session.commit()
             flash(f"Your account was added!")
             return redirect(url_for('main.calibre_access'))
     elif not current_user.calibre_usrname:
-        os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
-        os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.username }"')
-        current_user.calibre_usrname = sub('[^\w \-]+','',current_user.username)
+        # Original Code
+        # os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
+        # os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.username }"')
+        os.system(f'echo "Invalidating card for: {current_user.calibre_usrname}" > library_cards.log')
+        os.system(f'echo "Invalidating card for: {current_user.username}" > library_cards.log')
+        current_user.calibre_usrname = sub(r'[^\w \-]+','',current_user.username)
         current_user.calibre_pass = None
         db.session.commit()
         flash('Account fix in progress... Your password will be changed.', category='error')
@@ -162,7 +168,7 @@ def forum():
         flash('Your post is now live!')
         return redirect((url_for('main.forum')))
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.timestamp.desc()).paginate(page,current_app.config['POSTS_PER_PAGE'], True)
+    posts = Post.query.order_by(Post.timestamp.desc()).paginate(page=page,per_page=current_app.config['POSTS_PER_PAGE'], count=True)
     next_url = url_for('main.forum', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.forum', page=posts.prev_num) if posts.has_prev else None
     return render_template("forum.html", title='Public Forum', posts=posts.items, next_url=next_url, prev_url=prev_url,mode=0,form=form)
@@ -172,7 +178,7 @@ def forum():
 @verify_usr
 def followedfeed():
     page = request.args.get('page', 1, type=int)
-    posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'], True)
+    posts = current_user.followed_posts().paginate(page=page,per_page=current_app.config['POSTS_PER_PAGE'], count=True)
     next_url = url_for('main.followedfeed', page=posts.next_num) if posts.has_next else None
     prev_url = url_for('main.followedfeed', page=posts.prev_num) if posts.has_prev else None
     return render_template("forum.html", title='Followed Feed', posts=posts.items, next_url=next_url, prev_url=prev_url,mode=1)

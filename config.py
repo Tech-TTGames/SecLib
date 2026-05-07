@@ -17,5 +17,3 @@ class Config(object):
     CALIBRE_DB_PATH = os.environ.get('CALIBRE_DB_PATH')
     POSTS_PER_PAGE = 20
     VALID_DOMAINS = os.environ.get('VALID_DOMAINS')
-    RECAPTCHA_PUBLIC_KEY=os.environ.get('RECAPTCHA_SITE_KEY')
-    RECAPTCHA_PRIVATE_KEY=os.environ.get('RECAPTCHA_SECRET_KEY')

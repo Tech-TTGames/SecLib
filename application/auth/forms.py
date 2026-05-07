@@ -1,4 +1,4 @@
-from flask_wtf import FlaskForm, RecaptchaField
+from flask_wtf import FlaskForm
 from flask import current_app
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
@@ -9,7 +9,6 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
-    recaptcha = RecaptchaField()
     submit = SubmitField('Sign In')
 
 class RegistrationForm(FlaskForm):
@@ -17,14 +16,13 @@ class RegistrationForm(FlaskForm):
     mail = StringField('Email', validators=[DataRequired(),Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     password_ver = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
-    recaptcha = RecaptchaField()
     submit = SubmitField('Register')
         
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
                 raise ValidationError('Username Taken!')
-        user = User.query.filter_by(calibre_usrname=re.sub('[^\w \-]+','',username.data)).first()
+        user = User.query.filter_by(calibre_usrname=re.sub(r'[^\w \-]+','',username.data)).first()
         if user is not None:
                 raise ValidationError('Username Taken! (when cleaned)')
     
@@ -32,20 +30,19 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=mail.data).first()
         if user is not None:
             raise ValidationError('Email already in use!')
-        domain = mail.data.split('@')[1]
-        if domain not in current_app.config['VALID_DOMAINS']:
-                raise ValidationError('Illegal email address (domain not on whitelist)')
+        # Original code not needed for this showcase.
+        # domain = mail.data.split('@')[1]
+        # if domain not in current_app.config['VALID_DOMAINS']:
+        #        raise ValidationError('Illegal email address (domain not on whitelist)')
 
 
 class AccountRecoveryRequestForm(FlaskForm):
     email = StringField('Email',validators=[DataRequired(),Email()])
-    recaptcha = RecaptchaField()
     submit = SubmitField('Request Password Reset')
 
 class AccountRecoveryForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     password_ver = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
-    recaptcha = RecaptchaField()
     submit = SubmitField('Set New Password')
 
 class ControlPanel(FlaskForm):
@@ -71,7 +68,7 @@ class ControlPanel(FlaskForm):
             user = User.query.filter_by(username=new_name.data).first()
             if user is not None:
                 raise ValidationError('Username Taken!')
-            user = User.query.filter_by(calibre_usrname=re.sub('[^\w \-]+','',new_name.data)).first()
+            user = User.query.filter_by(calibre_usrname=re.sub(r'[^\w \-]+','',new_name.data)).first()
             if user is not None:
                 raise ValidationError('Username Taken! (when cleaned)')
 

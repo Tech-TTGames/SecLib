@@ -49,13 +49,16 @@ def register():
         return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data,email=form.mail.data,calibre_usrname=sub('[^\w \-]+','',form.username.data))
+        user = User(username=form.username.data,email=form.mail.data,calibre_usrname=sub(r'[^\w \-]+','',form.username.data))
         user.set_Password(form.password.data)
         db.session.add(user)
         db.session.commit()
         user = User.query.filter_by(username=form.username.data).first()
-        send_activate(user)
-        flash(f"Thank you for registering {form.username.data}! Please check your email for an activation link.")
+        # Bypass email activation for the demo
+        # send_activate(user)
+        user.confirmed = True
+        db.session.commit()
+        flash(f"Thank you for registering {form.username.data}! Please check your email for an activation link. (This has been disabled for the demo, feel free to just log in.)")
         return redirect(url_for('auth.login'))
     return render_template('/auth/register.html', title='Register', form=form)
 
@@ -80,6 +83,7 @@ def activate():
 @bp.route('/resend')
 @login_required
 def resend():
+    flash("This feature is disabled for the demo and will not work.", category='warning')
     if current_user.confirmed:
         return redirect(url_for('main.index'))
     send_activate(current_user)
@@ -88,6 +92,7 @@ def resend():
 
 @bp.route('/request_recovery',methods=['GET','POST'])
 def recover_account_request():
+    flash("This feature is disabled for the demo and will not work.", category='warning')
     if current_user.is_authenticated:
         return redirect(url_for('auth.index'))
     form = AccountRecoveryRequestForm()
@@ -101,6 +106,7 @@ def recover_account_request():
 
 @bp.route('/recover',methods=['GET','POST'])
 def recover():
+    flash("This feature is disabled for the demo and will not work.", category='warning')
     token = request.args.get('t')
     user = User.verify_token(token)
     if user is None:
@@ -130,7 +136,7 @@ def control_panel():
             actions_run = "Executed:"
             if form.changename.data:
                 user.username = form.new_name.data
-                user.calibre_usrname = sub('[^\w \-]+','',form.username.data)
+                user.calibre_usrname = sub(r'[^\w \-]+','',form.username.data)
                 actions_run += f' Name changed to {form.new_name.data};'
             if form.changemail.data:
                 user.email = form.new_email.data
@@ -145,7 +151,9 @@ def control_panel():
                 user.lock = not user.lock
                 actions_run += f'Toggled lock to {user.lock}'
             if form.reset_calibre.data:
-                system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
+                # Original Code
+                # system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
+                system(f'echo "Invalidating card for: {current_user.username}" > library_cards.log')
                 user.calibre_pass = None
                 actions_run += 'Calibre Data Reset;'
             actions_run += f' for {user.username}!'
