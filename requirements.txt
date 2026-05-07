@@ -1,6 +1,6 @@
 alembic~=1.7.4
 argon2-cffi~=21.1.0
-blinker~=1.4
+blinker~=1.9
 cffi~=1.15.0
 click~=8.0.3
 colorama~=0.4.4
