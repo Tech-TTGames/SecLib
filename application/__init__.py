@@ -69,7 +69,11 @@ def init_app(config_class=Config):
             )
             passwd = "admin"
             # 2025:A07 Fix option 2:
-            # passwd = input("Enter a new password for the admin account: ")
+            # envp = os.environ.get('ADMIN_PASSWD')
+            # if envp:
+            #     passwd = envp
+            # else:
+            #     passwd = input("Enter a new password for the admin account: ")
             default_admin.set_Password(passwd)
             db.session.add(default_admin)
             db.session.commit()
