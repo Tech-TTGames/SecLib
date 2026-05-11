@@ -57,6 +57,8 @@ class User(UserMixin,db.Model):
         #     return True
         # except argon2.exceptions.VerifyMismatchError:
         #     return False
+        # Delete just the returns and IF block before this
+        # Delete just the returns and IF block before this and uncomment the code below
     
     def is_following(self,user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
