@@ -59,7 +59,7 @@ def init_app(config_class=Config):
         # Simplified DB setup.
         from application.models import User, Post
         db.create_all()
-        # 2025:A07 To fix remove.
+        # 2025:A07 Fix option 1: Remove the following indent block.
         if not User.query.filter_by(username='admin').first():
             default_admin = User(
                 username='admin',
@@ -67,7 +67,10 @@ def init_app(config_class=Config):
                 admin=True,
                 confirmed=True
             )
-            default_admin.set_Password('admin')
+            passwd = "admin"
+            # 2025:A07 Fix option 2:
+            # passwd = input("Enter a new password for the admin account: ")
+            default_admin.set_Password(passwd)
             db.session.add(default_admin)
             db.session.commit()
             app.logger.warning("INSECURE: Default admin account created with password 'admin'")

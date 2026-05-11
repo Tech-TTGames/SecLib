@@ -145,8 +145,13 @@ def calibre_access():
         # os.system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.username }"')
         os.system(f'echo "Invalidating card for: {current_user.calibre_usrname}" >> library_cards.log')
         os.system(f'echo "Invalidating card for: {current_user.username}" >> library_cards.log')
-        # FIXED 2025:A05 Other instances may also be fixed similarly, however, this is the only 'exploitable' one as calibre_usrname is sanitized.
-        # subprocess.run(['echo', "Invalidating card for:", current_user.username, "> library_cards.log"], shell=True)
+        # 2025:A05 Fix option 1: Remove legacy code (above line)
+        # 2025:A05 Fix option 2: Replace with:
+        # This is simple for the original code:
+        # subprocess.run(['calibre-server', '--userdb', current_app.config['CALIBRE_DB_PATH'], '--manage-users', 'remove', current_user.calibre_usrname])
+        # However, with the new code the neatest solution does not rely on subprocess.run due to requiring shell=True (which would re-create the original issue)
+        # with open("library_cards.log", "w") as log_file:
+        #     log_file.write(f"Invalidating card for: {current_user.username}\n")
         current_user.calibre_usrname = sub(r'[^\w \-]+','',current_user.username)
         current_user.calibre_pass = None
         db.session.commit()
@@ -190,3 +195,9 @@ def followedfeed():
 @bp.route('/teapot')
 def teapot():
     raise ImATeapot
+
+@bp.route('/crash')
+def crash():
+    # A02:2025 showcase code.
+    # Removing this code will cover it up, but keep the issue otherwise.
+    return 1 / 0
