@@ -1,7 +1,6 @@
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap4
@@ -11,7 +10,6 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 
 db = SQLAlchemy()
-migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
@@ -23,7 +21,6 @@ def init_app(config_class=Config):
     app.config.from_object(config_class)
 
     db.init_app(app)
-    migrate.init_app(app,db)
     login.init_app(app)
     mail.init_app(app)
     bootstrap.init_app(app)
@@ -57,9 +54,12 @@ def init_app(config_class=Config):
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
         app.logger.info('SecLibACC startup...')
-    # 2025:A07 To fix remove.
+
     with app.app_context():
-        from application.models import User
+        # Simplified DB setup.
+        from application.models import User, Post
+        db.create_all()
+        # 2025:A07 To fix remove.
         if not User.query.filter_by(username='admin').first():
             default_admin = User(
                 username='admin',
@@ -67,7 +67,7 @@ def init_app(config_class=Config):
                 admin=True,
                 confirmed=True
             )
-            default_admin.set_password('admin')
+            default_admin.set_Password('admin')
             db.session.add(default_admin)
             db.session.commit()
             app.logger.warning("INSECURE: Default admin account created with password 'admin'")
