@@ -77,7 +77,8 @@ def init_app(config_class=Config):
             default_admin.set_Password(passwd)
             db.session.add(default_admin)
             db.session.commit()
-            app.logger.warning("INSECURE: Default admin account created with password 'admin'")
+            if passwd == "admin":
+                app.logger.warning("INSECURE: Default admin account created with password 'admin'")
     return app
 
 
