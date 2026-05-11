@@ -155,7 +155,7 @@ def control_panel():
         if form.reset_calibre.data:
             # Original Code
             # system(f'calibre-server --userdb "{ current_app.config["CALIBRE_DB_PATH"] }" --manage-users remove "{ current_user.calibre_usrname }"')
-            system(f'echo "Invalidating card for: {current_user.calibre_usrname}" > library_cards.log')
+            system(f'echo "Invalidating card for: {current_user.calibre_usrname}" >> library_cards.log')
             user.calibre_pass = None
             actions_run += 'Calibre Data Reset;'
         actions_run += f' for {user.username}!'
