@@ -132,4 +132,3 @@ dmypy.json
 #Databases
 *.db
 *.sql
-.flaskenv
